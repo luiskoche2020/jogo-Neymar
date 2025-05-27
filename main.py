@@ -3,9 +3,9 @@ import random
 import os
 import tkinter as tk
 from tkinter import messagebox
-from recursos.funcoes import inicializarBancoDeDados
-from recursos.funcoes import escreverDados
-from recursos.util import formatarPontuacao
+from comandos.funcoes import inicializarBancoDeDados
+from comandos.funcoes import escreverDados
+from comandos.util import formatarPontuacao
 import json
 
 pygame.init()
@@ -14,23 +14,26 @@ tamanho = (1000,700)
 relogio = pygame.time.Clock()
 tela = pygame.display.set_mode( tamanho ) 
 pygame.display.set_caption("Iron Man do Marcão")
-icone  = pygame.image.load("assets/icone.png")
+icone  = pygame.image.load("recursos/icone.png")
 pygame.display.set_icon(icone)
 branco = (255,255,255)
 preto = (0, 0 ,0 )
 
-imagemPause = pygame.image.load("assets/pause.png") 
 
-neymar = pygame.image.load("assets/neymar.png")
-fundoStart = pygame.image.load("assets/fundoStart.jpg")
-fundoJogo = pygame.image.load("assets/fundoJogo.png")
-fundoDead = pygame.image.load("assets/fundoDead.png")
-clt = pygame.image.load("assets/clt.png")
-missileSound = pygame.mixer.Sound("assets/missile.wav")
-explosaoSound = pygame.mixer.Sound("assets/explosao.wav")
+
+imagemPause = pygame.image.load("recursos/pause.png") 
+decoracao = pygame.image.load("recursos/decoracao.png")
+neymar = pygame.image.load("recursos/neymar.png")
+fundoStart = pygame.image.load("recursos/fundoStart.jpg")
+fundoJogo = pygame.image.load("recursos/fundoJogo.png")
+fundoDead = pygame.image.load("recursos/fundoDead.png")
+clt = pygame.image.load("recursos/clt.png")
+missileSound = pygame.mixer.Sound("recursos/missile.wav")
+explosaoSound = pygame.mixer.Sound("recursos/explosao.wav")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 fonteMorte = pygame.font.SysFont("arial",120)
-pygame.mixer.music.load("assets/ironsound.mp3")
+
+pygame.mixer.music.load("recursos/ironsound.mp3")
 
 def jogar():
     largura_janela = 300
@@ -64,7 +67,6 @@ def jogar():
     posicaoXPersona = 400
     posicaoYPersona = 300
     movimentoXPersona = 0
-    movimentoYPersona = 0
     posicaoXMissel = 400
     posicaoYMissel = -240
     velocidadeMissel = 1
@@ -75,9 +77,18 @@ def jogar():
 
     larguraPersona = 160
     alturaPersona = 120
+    margemInferior = 40
+    posicaoYPersona = tamanho[1] - alturaPersona - margemInferior
     larguaMissel = 190
     alturaMissel = 150
     dificuldade = 30
+
+    # Objeto decorativo
+    larguraDecoracao = 120
+    alturaDecoracao = 120
+    xDecoracao = random.randint(0, tamanho[0] - larguraDecoracao)
+    yDecoracao = random.randint(0, tamanho[1] - alturaDecoracao)
+    velocidadeDecoracao = [random.choice([-2, 2]), random.choice([-2, 2])]
 
     while True:
         for evento in pygame.event.get():
@@ -88,18 +99,12 @@ def jogar():
                     movimentoXPersona = 15
                 elif evento.key == pygame.K_LEFT:
                     movimentoXPersona = -15
-                elif evento.key == pygame.K_UP:
-                    movimentoYPersona = -15
-                elif evento.key == pygame.K_DOWN:
-                    movimentoYPersona = 15
                 elif evento.key == pygame.K_SPACE:
                     pausado = not pausado  # alterna pause
 
             elif evento.type == pygame.KEYUP:
                 if evento.key in [pygame.K_RIGHT, pygame.K_LEFT]:
                     movimentoXPersona = 0
-                if evento.key in [pygame.K_UP, pygame.K_DOWN]:
-                    movimentoYPersona = 0
 
         # EXIBIR PAUSA
         if pausado:
@@ -111,18 +116,24 @@ def jogar():
             continue
 
         posicaoXPersona += movimentoXPersona
-        posicaoYPersona += movimentoYPersona
+        
+        # Movimento aleatório da decoração
+
+        xDecoracao += velocidadeDecoracao[0]
+        yDecoracao += velocidadeDecoracao[1]
+
+        # Rebater nas bordas da tela
+
+        if xDecoracao <= 0 or xDecoracao >= tamanho[0] - larguraDecoracao:
+            velocidadeDecoracao[0] *= -1
+            if yDecoracao <= 0 or yDecoracao >= tamanho[1] - alturaDecoracao:
+                velocidadeDecoracao[1] *= -1
 
         # Limites da tela
         if posicaoXPersona < 0:
             posicaoXPersona = 0
         elif posicaoXPersona > (1000 - larguraPersona):
             posicaoXPersona = 1000 - larguraPersona
-
-        if posicaoYPersona < 0:
-            posicaoYPersona = 0
-        elif posicaoYPersona > (700 - alturaPersona):
-            posicaoYPersona = 700 - alturaPersona
 
         tela.fill(branco)
         tela.blit(fundoJogo, (0, 0))
@@ -138,8 +149,13 @@ def jogar():
 
         tela.blit(clt, (posicaoXMissel, posicaoYMissel))
 
-        texto = fonteMenu.render("Pontos: " + formatarPontuacao(pontos), True, branco)
-        tela.blit(texto, (15, 15))
+        # Exibe pontos
+        texto_pontos = fonteMenu.render("Pontos: " + formatarPontuacao(pontos), True, branco)
+        tela.blit(texto_pontos, (15, 15))
+
+        # Exibe instrução de pausa
+        mensagem_pausa = fonteMenu.render("Pressione ESPAÇO para pausar o game", True, branco)
+        tela.blit(mensagem_pausa, (1000 - mensagem_pausa.get_width() - 15, 15))
 
         pixelsPersonaX = list(range(posicaoXPersona, posicaoXPersona + larguraPersona))
         pixelsPersonaY = list(range(posicaoYPersona, posicaoYPersona + alturaPersona))
@@ -155,49 +171,60 @@ def jogar():
                 print("Ainda Vivo, mas por pouco!")
         else:
             print("Ainda Vivo")
-
+        
+        tela.blit(decoracao, (xDecoracao, yDecoracao))
         pygame.display.update()
         relogio.tick(60)
 
 def telaBoasVindas(nome):
     botao_largura = 200
     botao_altura = 50
+    cinza_claro = (230, 230, 230)
+    verde = (0, 150, 0)
+    vermelho = (200, 0, 0)
+
+    fonteTitulo = pygame.font.SysFont("arial", 32, bold=True)
+    fonteTexto = pygame.font.SysFont("arial", 22)
+    fonteBotao = pygame.font.SysFont("arial", 20, bold=True)
 
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 quit()
             elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if botao_rect.collidepoint(evento.pos):
-                    return  # sai da tela e inicia o jogo
+                if botao_sair.collidepoint(evento.pos):
+                    quit()
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_RETURN:
+                    return  # ENTER inicia o jogo
 
-        tela.fill(branco)
+        tela.fill(cinza_claro)
 
-        # Texto: Boas-vindas
-        saudacao = fonteMenu.render(f"Bem-vindo, {nome}!", True, preto)
-        tela.blit(saudacao, (tamanho[0]//2 - saudacao.get_width()//2, 100))
+        # Título centralizado
+        titulo = fonteTitulo.render(f"Bem-vindo, {nome}!", True, preto)
+        tela.blit(titulo, (tamanho[0]//2 - titulo.get_width()//2, 80))
 
-        # Instruções
+        # Instruções do jogo
         instrucoes = [
-            "Use as setas ( <- e ->) do teclado para mover o Neymar.",
-            "Desvie das CLTs para que o Neymar não começar a trabalhar.",
-            "Para cada CLT desviada você pontua",
-            "Obs: Você pode PAUSAR em qualquer momento apertando ESPAÇO (SPACE)"
+            "Use as setas ( <- e -> ) do teclado para mover o Neymar.",
+            "Desvie das CLTs para que o Neymar não comece a trabalhar.",
+            "Para cada CLT desviada você ganha pontos.",
+            "Você pode PAUSAR o jogo a qualquer momento com ESPAÇO (SPACE).",
+            "Pressione ENTER para iniciar a partida!"
         ]
 
         for i, linha in enumerate(instrucoes):
-            texto = fonteMenu.render(linha, True, preto)
-            tela.blit(texto, (tamanho[0]//2 - texto.get_width()//2, 160 + i*30))
+            texto = fonteTexto.render(linha, True, preto)
+            tela.blit(texto, (tamanho[0]//2 - texto.get_width()//2, 140 + i*30))
 
-        # Botão "Começar"
-        botao_rect = pygame.draw.rect(
-            tela,
-            (0, 200, 0),
-            (tamanho[0]//2 - botao_largura//2, 350, botao_largura, botao_altura),
+        # Botão visual de sair
+        botao_sair = pygame.draw.rect(
+            tela, vermelho,
+            (tamanho[0] - 120, tamanho[1] - 60, 100, 40),
             border_radius=10
         )
-        texto_botao = fonteMenu.render("Começar", True, branco)
-        tela.blit(texto_botao, (tamanho[0]//2 - texto_botao.get_width()//2, 360))
+        texto_sair = fonteBotao.render("Sair", True, branco)
+        tela.blit(texto_sair, (tamanho[0] - 120 + 25, tamanho[1] - 60 + 10))
 
         pygame.display.update()
         relogio.tick(60)
