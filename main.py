@@ -19,9 +19,8 @@ pygame.display.set_icon(icone)
 branco = (255,255,255)
 preto = (0, 0 ,0 )
 
-
-
 imagemPause = pygame.image.load("recursos/pause.png") 
+
 decoracao = pygame.image.load("recursos/decoracao.png")
 neymar = pygame.image.load("recursos/neymar.png")
 fundoStart = pygame.image.load("recursos/fundoStart.jpg")
@@ -32,7 +31,6 @@ missileSound = pygame.mixer.Sound("recursos/missile.wav")
 explosaoSound = pygame.mixer.Sound("recursos/explosao.wav")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 fonteMorte = pygame.font.SysFont("arial",120)
-
 pygame.mixer.music.load("recursos/ironsound.mp3")
 
 def jogar():
@@ -126,8 +124,8 @@ def jogar():
 
         if xDecoracao <= 0 or xDecoracao >= tamanho[0] - larguraDecoracao:
             velocidadeDecoracao[0] *= -1
-            if yDecoracao <= 0 or yDecoracao >= tamanho[1] - alturaDecoracao:
-                velocidadeDecoracao[1] *= -1
+        if yDecoracao <= 0 or yDecoracao >= tamanho[1] - alturaDecoracao:
+            velocidadeDecoracao[1] *= -1
 
         # Limites da tela
         if posicaoXPersona < 0:
@@ -219,9 +217,9 @@ def telaBoasVindas(nome):
 
         # Botão visual de sair
         botao_sair = pygame.draw.rect(
-            tela, vermelho,
-            (tamanho[0] - 120, tamanho[1] - 60, 100, 40),
-            border_radius=10
+        tela, vermelho,
+        (tamanho[0] - botao_largura - 20, tamanho[1] - botao_altura - 20, botao_largura, botao_altura),
+        border_radius=10
         )
         texto_sair = fonteBotao.render("Sair", True, branco)
         tela.blit(texto_sair, (tamanho[0] - 120 + 25, tamanho[1] - 60 + 10))
