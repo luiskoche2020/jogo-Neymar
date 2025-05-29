@@ -18,21 +18,17 @@ def inicializarBancoDeDados():
         banco = open("base.atitus","w")
     
 def escreverDados(nome, pontos):
-    # INI - inserindo no arquivo
-    banco = open("base.atitus","r")
-    dados = banco.read()
-    banco.close()
-    print("dados",type(dados))
-    if dados != "":
-        dadosDict = json.loads(dados)
-    else:
+    try:
+        with open("base.atitus", "r") as banco:
+            dados = banco.read()
+            dadosDict = json.loads(dados) if dados else {}
+    except FileNotFoundError:
         dadosDict = {}
-        
-    data_br = datetime.now().strftime("%d/%m/%Y")
-    dadosDict[nome] = (pontos, data_br)
-    
-    banco = open("base.atitus","w")
-    banco.write(json.dumps(dadosDict))
-    banco.close()
+
+    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")  # inclui data e hora
+    dadosDict[nome] = (pontos, data_hora)
+
+    with open("base.atitus", "w") as banco:
+        banco.write(json.dumps(dadosDict, indent=4))
     
     # END - inserindo no arquivo

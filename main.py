@@ -12,6 +12,8 @@ pygame.init()
 inicializarBancoDeDados()
 tamanho = (1000,700)
 relogio = pygame.time.Clock()
+raio_lua = 25
+direcao_lua = 1  # 1 para crescer, -1 para diminuir
 tela = pygame.display.set_mode( tamanho ) 
 pygame.display.set_caption("Iron Man do Marcão")
 icone  = pygame.image.load("recursos/icone.png")
@@ -127,11 +129,19 @@ def jogar():
         if yDecoracao <= 0 or yDecoracao >= tamanho[1] - alturaDecoracao:
             velocidadeDecoracao[1] *= -1
 
-        # Limites da tela
         if posicaoXPersona < 0:
             posicaoXPersona = 0
         elif posicaoXPersona > (1000 - larguraPersona):
             posicaoXPersona = 1000 - larguraPersona
+
+        # Animação de pulso da lua (fora do if)
+
+        global raio_lua, direcao_lua
+        raio_lua += direcao_lua * 0.2
+        if raio_lua >= 35:
+            direcao_lua = -1
+        elif raio_lua <= 25:
+            direcao_lua = 1
 
         tela.fill(branco)
         tela.blit(fundoJogo, (0, 0))
@@ -144,6 +154,32 @@ def jogar():
             velocidadeMissel += 1
             posicaoXMissel = random.randint(0, 800)
             pygame.mixer.Sound.play(missileSound)
+
+        # Desenhar lua com contorno e detalhes no canto superior direito
+        centro_lua = (tamanho[0] - 100, 90)  # canto superior direito, abaixo da mensagem de pausa
+
+        # Cores
+        
+        cor_lua = (240, 240, 255)
+        cor_contorno = (200, 200, 235)
+        cor_sombra = (200, 200, 230)
+        cor_cratera = (180, 180, 210)
+
+        raio_int = int(raio_lua)
+
+        # Contorno externo (leve brilho ao redor)
+        pygame.draw.circle(tela, cor_contorno, centro_lua, raio_int + 3)
+
+        # Lua principal
+        pygame.draw.circle(tela, cor_lua, centro_lua, raio_int)
+
+        # Sombra suave sobreposta para dar volume
+        pygame.draw.circle(tela, cor_sombra, (centro_lua[0] - 6, centro_lua[1] - 4), int(raio_lua * 0.8))
+
+        # Crateras decorativas
+        pygame.draw.circle(tela, cor_cratera, (centro_lua[0] + 5, centro_lua[1] - 3), 4)
+        pygame.draw.circle(tela, cor_cratera, (centro_lua[0] - 5, centro_lua[1] + 4), 3)
+        pygame.draw.circle(tela, cor_cratera, (centro_lua[0] + 2, centro_lua[1] + 6), 2)
 
         tela.blit(clt, (posicaoXMissel, posicaoYMissel))
 
@@ -175,10 +211,8 @@ def jogar():
         relogio.tick(60)
 
 def telaBoasVindas(nome):
-    botao_largura = 200
-    botao_altura = 50
-    cinza_claro = (230, 230, 230)
-    verde = (0, 150, 0)
+    cinza_escuro = (50, 50, 50)
+    branco_suave = (240, 240, 240)
     vermelho = (200, 0, 0)
 
     fonteTitulo = pygame.font.SysFont("arial", 32, bold=True)
@@ -196,15 +230,15 @@ def telaBoasVindas(nome):
                 if evento.key == pygame.K_RETURN:
                     return  # ENTER inicia o jogo
 
-        tela.fill(cinza_claro)
+        tela.fill(cinza_escuro)
 
         # Título centralizado
-        titulo = fonteTitulo.render(f"Bem-vindo, {nome}!", True, preto)
+        titulo = fonteTitulo.render(f"Bem-vindo, {nome}!", True, branco_suave)
         tela.blit(titulo, (tamanho[0]//2 - titulo.get_width()//2, 80))
 
         # Instruções do jogo
         instrucoes = [
-            "Use as setas ( <- e -> ) do teclado para mover o Neymar.",
+            "Use as setas ( ← e → ) do teclado para mover o Neymar.",
             "Desvie das CLTs para que o Neymar não comece a trabalhar.",
             "Para cada CLT desviada você ganha pontos.",
             "Você pode PAUSAR o jogo a qualquer momento com ESPAÇO (SPACE).",
@@ -212,17 +246,23 @@ def telaBoasVindas(nome):
         ]
 
         for i, linha in enumerate(instrucoes):
-            texto = fonteTexto.render(linha, True, preto)
-            tela.blit(texto, (tamanho[0]//2 - texto.get_width()//2, 140 + i*30))
+            texto = fonteTexto.render(linha, True, branco_suave)
+            tela.blit(texto, (tamanho[0]//2 - texto.get_width()//2, 140 + i*35))
 
         # Botão visual de sair
+        texto_sair = fonteBotao.render("Sair", True, branco_suave)
+        padding_x, padding_y = 20, 10
+        botao_largura = texto_sair.get_width() + padding_x * 2
+        botao_altura = texto_sair.get_height() + padding_y * 2
+        x_botao = tamanho[0] - botao_largura - 20
+        y_botao = tamanho[1] - botao_altura - 20
+
         botao_sair = pygame.draw.rect(
-        tela, vermelho,
-        (tamanho[0] - botao_largura - 20, tamanho[1] - botao_altura - 20, botao_largura, botao_altura),
-        border_radius=10
+            tela, vermelho,
+            (x_botao, y_botao, botao_largura, botao_altura),
+            border_radius=10
         )
-        texto_sair = fonteBotao.render("Sair", True, branco)
-        tela.blit(texto_sair, (tamanho[0] - 120 + 25, tamanho[1] - 60 + 10))
+        tela.blit(texto_sair, (x_botao + padding_x, y_botao + padding_y))
 
         pygame.display.update()
         relogio.tick(60)
