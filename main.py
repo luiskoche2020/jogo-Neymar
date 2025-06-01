@@ -3,10 +3,19 @@ import random
 import os
 import tkinter as tk
 from tkinter import messagebox
-from comandos.funcoes import inicializarBancoDeDados
-from comandos.funcoes import escreverDados
-from comandos.util import formatarPontuacao
+from recursos2.funcoes import inicializarBancoDeDados
+from recursos2.funcoes import escreverDados
+from recursos2.util import formatarPontuacao
 import json
+import speech_recognition as sr
+import pyttsx3
+
+def falar(texto):
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 150)  # Velocidade da fala
+    engine.setProperty('volume', 1.0)  # Volume máximo
+    engine.say(texto)
+    engine.runAndWait()
 
 pygame.init()
 inicializarBancoDeDados()
@@ -35,9 +44,26 @@ fonteMenu = pygame.font.SysFont("comicsans",18)
 fonteMorte = pygame.font.SysFont("arial",120)
 pygame.mixer.music.load("recursos/ironsound.mp3")
 
+def reconhecer_fala():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Fale seu nome...")
+        audio = r.listen(source)
+
+    try:
+        texto = r.recognize_google(audio, language="pt-BR")
+        print("Você disse:", texto)
+        return texto
+    except sr.UnknownValueError:
+        print("Não entendi o que você disse.")
+        return ""
+    except sr.RequestError as e:
+        print("Erro ao conectar:", e)
+        return ""
+    
 def jogar():
     largura_janela = 300
-    altura_janela = 50
+    altura_janela = 120
 
     def obter_nome():
         global nome
@@ -58,8 +84,20 @@ def jogar():
 
     entry_nome = tk.Entry(root)
     entry_nome.pack()
+
+    # Botão para digitar o nome
     botao = tk.Button(root, text="Enviar", command=obter_nome)
     botao.pack()
+
+    # Botão para falar o nome
+    def falar_nome():
+        nome_falado = reconhecer_fala()
+        if nome_falado:
+            entry_nome.delete(0, tk.END)
+            entry_nome.insert(0, nome_falado)
+
+    botao_falar = tk.Button(root, text="Falar nome", command=falar_nome)
+    botao_falar.pack()
     root.mainloop()
 
     telaBoasVindas(nome)
@@ -319,31 +357,30 @@ def start():
 
 def dead():
     pygame.mixer.music.stop()
-    pygame.mixer.Sound.play(explosaoSound)
+    falar("Game Over")
+
     larguraButtonStart = 150
     alturaButtonStart  = 40
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
-    
-    
-    root = tk.Tk()
-    root.title("Tela da Morte")
 
-    # Adiciona um título na tela
-    label = tk.Label(root, text="Log das Partidas", font=("Arial", 16))
-    label.pack(pady=10)
+    # Carregar os últimos 5 registros do log
+    try:
+        with open("log.dat.", "r") as arquivo:
+            dados = json.load(arquivo)
+    except (FileNotFoundError, json.JSONDecodeError):
+        dados = {}
 
-    # Criação do Listbox para mostrar o log
-    listbox = tk.Listbox(root, width=50, height=10, selectmode=tk.SINGLE)
-    listbox.pack(pady=20)
+    ultimos_registros = sorted(
+        dados.items(),
+        key=lambda item: item[1][1],
+        reverse=True
+    )[:5]
 
-    # Adiciona o log das partidas no Listbox
-    log_partidas = open("base.atitus", "r").read()
-    log_partidas = json.loads(log_partidas)
-    for chave in log_partidas:
-        listbox.insert(tk.END, f"Pontos: {log_partidas[chave][0]} na data: {log_partidas[chave][1]} - Nickname: {chave}")  # Adiciona cada linha no Listbox
-    
-    root.mainloop()
+    texto_logs = []
+    for nick, (pontos, data_hora) in ultimos_registros:
+        texto_logs.append(f"Pontos: {pontos} - Data: {data_hora} - Nick: {nick}")
+
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -355,40 +392,38 @@ def dead():
                 if quitButton.collidepoint(evento.pos):
                     larguraButtonQuit = 140
                     alturaButtonQuit  = 35
-
-                
             elif evento.type == pygame.MOUSEBUTTONUP:
-                # Verifica se o clique foi dentro do retângulo
                 if startButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonStart = 150
                     alturaButtonStart  = 40
                     jogar()
                 if quitButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     quit()
-                    
-        
-            
-            
-        tela.fill(branco)
-        tela.blit(fundoDead, (0,0) )
 
-        
+        tela.fill(branco)
+        tela.blit(fundoDead, (0,0))
+
+        # Exibe título
+        vermelho = (255, 0, 0)
+        titulo_logs = fonteMenu.render("Últimos 5 Registros:", True, vermelho)
+        tela.blit(titulo_logs, (350, 200))
+
+        vermelho = (255, 0, 0)  # vermelho forte
+        for i, texto in enumerate(texto_logs):
+                log_texto = fonteMenu.render(texto, True, vermelho)
+                tela.blit(log_texto, (150, 250 + i*30))
+
         startButton = pygame.draw.rect(tela, branco, (10,10, larguraButtonStart, alturaButtonStart), border_radius=15)
         startTexto = fonteMenu.render("Iniciar Game", True, preto)
         tela.blit(startTexto, (25,12))
-        
+
         quitButton = pygame.draw.rect(tela, branco, (10,60, larguraButtonQuit, alturaButtonQuit), border_radius=15)
         quitTexto = fonteMenu.render("Sair do Game", True, preto)
         tela.blit(quitTexto, (25,62))
 
-
         pygame.display.update()
         relogio.tick(60)
-
-
 start()
 
