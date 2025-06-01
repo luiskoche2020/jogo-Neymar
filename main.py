@@ -24,7 +24,7 @@ relogio = pygame.time.Clock()
 raio_lua = 25
 direcao_lua = 1  # 1 para crescer, -1 para diminuir
 tela = pygame.display.set_mode( tamanho ) 
-pygame.display.set_caption("Iron Man do Marcão")
+pygame.display.set_caption("Neymar Game 2.0")
 icone  = pygame.image.load("recursos/icone.png")
 pygame.display.set_icon(icone)
 branco = (255,255,255)
@@ -38,11 +38,10 @@ fundoStart = pygame.image.load("recursos/fundoStart.jpg")
 fundoJogo = pygame.image.load("recursos/fundoJogo.png")
 fundoDead = pygame.image.load("recursos/fundoDead.png")
 clt = pygame.image.load("recursos/clt.png")
-missileSound = pygame.mixer.Sound("recursos/missile.wav")
-explosaoSound = pygame.mixer.Sound("recursos/explosao.wav")
+alarmSound = pygame.mixer.Sound("recursos/alarm.mpeg")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 fonteMorte = pygame.font.SysFont("arial",120)
-pygame.mixer.music.load("recursos/ironsound.mp3")
+pygame.mixer.music.load("recursos/champions.mpeg")
 
 def reconhecer_fala():
     r = sr.Recognizer()
@@ -105,10 +104,10 @@ def jogar():
     posicaoXPersona = 400
     posicaoYPersona = 300
     movimentoXPersona = 0
-    posicaoXMissel = 400
-    posicaoYMissel = -240
-    velocidadeMissel = 1
-    pygame.mixer.Sound.play(missileSound)
+    posicaoXClt = 400
+    posicaoYClt = -240
+    velocidadeClt = 1
+    pygame.mixer.Sound.play(alarmSound)
     pygame.mixer.music.play(-1)
     pontos = 0
     pausado = False
@@ -117,8 +116,8 @@ def jogar():
     alturaPersona = 120
     margemInferior = 40
     posicaoYPersona = tamanho[1] - alturaPersona - margemInferior
-    larguaMissel = 190
-    alturaMissel = 150
+    larguaClt = 190
+    alturaClt = 150
     dificuldade = 30
 
     # Objeto decorativo
@@ -161,7 +160,6 @@ def jogar():
         yDecoracao += velocidadeDecoracao[1]
 
         # Rebater nas bordas da tela
-
         if xDecoracao <= 0 or xDecoracao >= tamanho[0] - larguraDecoracao:
             velocidadeDecoracao[0] *= -1
         if yDecoracao <= 0 or yDecoracao >= tamanho[1] - alturaDecoracao:
@@ -172,8 +170,7 @@ def jogar():
         elif posicaoXPersona > (1000 - larguraPersona):
             posicaoXPersona = 1000 - larguraPersona
 
-        # Animação de pulso da lua (fora do if)
-
+        # Animação de pulso da lua
         global raio_lua, direcao_lua
         raio_lua += direcao_lua * 0.2
         if raio_lua >= 35:
@@ -185,19 +182,18 @@ def jogar():
         tela.blit(fundoJogo, (0, 0))
         tela.blit(neymar, (posicaoXPersona, posicaoYPersona))
 
-        posicaoYMissel += velocidadeMissel
-        if posicaoYMissel > 600:
-            posicaoYMissel = -240
+        posicaoYClt += velocidadeClt
+        if posicaoYClt > 600:
+            posicaoYClt = -240
             pontos += 1
-            velocidadeMissel += 1
-            posicaoXMissel = random.randint(0, 800)
-            pygame.mixer.Sound.play(missileSound)
+            velocidadeClt += 1
+            posicaoXClt = random.randint(0, 800)
+            pygame.mixer.Sound.play(alarmSound)
 
         # Desenhar lua com contorno e detalhes no canto superior direito
         centro_lua = (tamanho[0] - 100, 90)  # canto superior direito, abaixo da mensagem de pausa
 
         # Cores
-        
         cor_lua = (240, 240, 255)
         cor_contorno = (200, 200, 235)
         cor_sombra = (200, 200, 230)
@@ -219,7 +215,7 @@ def jogar():
         pygame.draw.circle(tela, cor_cratera, (centro_lua[0] - 5, centro_lua[1] + 4), 3)
         pygame.draw.circle(tela, cor_cratera, (centro_lua[0] + 2, centro_lua[1] + 6), 2)
 
-        tela.blit(clt, (posicaoXMissel, posicaoYMissel))
+        tela.blit(clt, (posicaoXClt, posicaoYClt))
 
         # Exibe pontos
         texto_pontos = fonteMenu.render("Pontos: " + formatarPontuacao(pontos), True, branco)
@@ -231,12 +227,12 @@ def jogar():
 
         pixelsPersonaX = list(range(posicaoXPersona, posicaoXPersona + larguraPersona))
         pixelsPersonaY = list(range(posicaoYPersona, posicaoYPersona + alturaPersona))
-        pixelsMisselX = list(range(posicaoXMissel, posicaoXMissel + larguaMissel))
-        pixelsMisselY = list(range(posicaoYMissel, posicaoYMissel + alturaMissel))
+        pixelsCltX = list(range(posicaoXClt, posicaoXClt + larguaClt))
+        pixelsCltY = list(range(posicaoYClt, posicaoYClt + alturaClt))
 
         os.system("cls")
-        if len(set(pixelsMisselY).intersection(pixelsPersonaY)) > dificuldade:
-            if len(set(pixelsMisselX).intersection(pixelsPersonaX)) > dificuldade:
+        if len(set(pixelsCltY).intersection(pixelsPersonaY)) > dificuldade:
+            if len(set(pixelsCltX).intersection(pixelsPersonaX)) > dificuldade:
                 escreverDados(nome, pontos)
                 dead()
             else:
