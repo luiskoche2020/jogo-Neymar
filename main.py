@@ -12,8 +12,8 @@ import pyttsx3
 
 def falar(texto):
     engine = pyttsx3.init()
-    engine.setProperty('rate', 150)  # Velocidade da fala
-    engine.setProperty('volume', 1.0)  # Volume máximo
+    engine.setProperty('rate', 150)  
+    engine.setProperty('volume', 1.0)  
     engine.say(texto)
     engine.runAndWait()
 
@@ -22,7 +22,7 @@ inicializarBancoDeDados()
 tamanho = (1000,700)
 relogio = pygame.time.Clock()
 raio_lua = 25
-direcao_lua = 1  # 1 para crescer, -1 para diminuir
+direcao_lua = 1  
 tela = pygame.display.set_mode( tamanho ) 
 pygame.display.set_caption("Neymar Game 2.0")
 icone  = pygame.image.load("recursos/icone.png")
@@ -84,11 +84,9 @@ def jogar():
     entry_nome = tk.Entry(root)
     entry_nome.pack()
 
-    # Botão para digitar o nome
     botao = tk.Button(root, text="Enviar", command=obter_nome)
     botao.pack()
 
-    # Botão para falar o nome
     def falar_nome():
         nome_falado = reconhecer_fala()
         if nome_falado:
@@ -120,7 +118,6 @@ def jogar():
     alturaClt = 150
     dificuldade = 30
 
-    # Objeto decorativo
     larguraDecoracao = 120
     alturaDecoracao = 120
     xDecoracao = random.randint(0, tamanho[0] - larguraDecoracao)
@@ -137,13 +134,12 @@ def jogar():
                 elif evento.key == pygame.K_LEFT:
                     movimentoXPersona = -15
                 elif evento.key == pygame.K_SPACE:
-                    pausado = not pausado  # alterna pause
+                    pausado = not pausado 
 
             elif evento.type == pygame.KEYUP:
                 if evento.key in [pygame.K_RIGHT, pygame.K_LEFT]:
                     movimentoXPersona = 0
 
-        # EXIBIR PAUSA
         if pausado:
             tela.blit(fundoJogo, (0, 0))
             tela.blit(imagemPause, (tamanho[0]//2 - imagemPause.get_width()//2,
@@ -153,13 +149,10 @@ def jogar():
             continue
 
         posicaoXPersona += movimentoXPersona
-        
-        # Movimento aleatório da decoração
 
         xDecoracao += velocidadeDecoracao[0]
         yDecoracao += velocidadeDecoracao[1]
 
-        # Rebater nas bordas da tela
         if xDecoracao <= 0 or xDecoracao >= tamanho[0] - larguraDecoracao:
             velocidadeDecoracao[0] *= -1
         if yDecoracao <= 0 or yDecoracao >= tamanho[1] - alturaDecoracao:
@@ -170,7 +163,6 @@ def jogar():
         elif posicaoXPersona > (1000 - larguraPersona):
             posicaoXPersona = 1000 - larguraPersona
 
-        # Animação de pulso da lua
         global raio_lua, direcao_lua
         raio_lua += direcao_lua * 0.2
         if raio_lua >= 35:
@@ -190,10 +182,8 @@ def jogar():
             posicaoXClt = random.randint(0, 800)
             pygame.mixer.Sound.play(alarmSound)
 
-        # Desenhar lua com contorno e detalhes no canto superior direito
-        centro_lua = (tamanho[0] - 100, 90)  # canto superior direito, abaixo da mensagem de pausa
+        centro_lua = (tamanho[0] - 100, 90)
 
-        # Cores
         cor_lua = (240, 240, 255)
         cor_contorno = (200, 200, 235)
         cor_sombra = (200, 200, 230)
@@ -201,27 +191,21 @@ def jogar():
 
         raio_int = int(raio_lua)
 
-        # Contorno externo (leve brilho ao redor)
         pygame.draw.circle(tela, cor_contorno, centro_lua, raio_int + 3)
 
-        # Lua principal
         pygame.draw.circle(tela, cor_lua, centro_lua, raio_int)
 
-        # Sombra suave sobreposta para dar volume
         pygame.draw.circle(tela, cor_sombra, (centro_lua[0] - 6, centro_lua[1] - 4), int(raio_lua * 0.8))
 
-        # Crateras decorativas
         pygame.draw.circle(tela, cor_cratera, (centro_lua[0] + 5, centro_lua[1] - 3), 4)
         pygame.draw.circle(tela, cor_cratera, (centro_lua[0] - 5, centro_lua[1] + 4), 3)
         pygame.draw.circle(tela, cor_cratera, (centro_lua[0] + 2, centro_lua[1] + 6), 2)
 
         tela.blit(clt, (posicaoXClt, posicaoYClt))
 
-        # Exibe pontos
         texto_pontos = fonteMenu.render("Pontos: " + formatarPontuacao(pontos), True, branco)
         tela.blit(texto_pontos, (15, 15))
 
-        # Exibe instrução de pausa
         mensagem_pausa = fonteMenu.render("Pressione ESPAÇO para pausar o game", True, branco)
         tela.blit(mensagem_pausa, (1000 - mensagem_pausa.get_width() - 15, 15))
 
@@ -262,15 +246,13 @@ def telaBoasVindas(nome):
                     quit()
             elif evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_RETURN:
-                    return  # ENTER inicia o jogo
+                    return 
 
         tela.fill(cinza_escuro)
 
-        # Título centralizado
         titulo = fonteTitulo.render(f"Bem-vindo, {nome}!", True, branco_suave)
         tela.blit(titulo, (tamanho[0]//2 - titulo.get_width()//2, 80))
 
-        # Instruções do jogo
         instrucoes = [
             "Use as setas ( ← e → ) do teclado para mover o Neymar.",
             "Desvie das CLTs para que o Neymar não comece a trabalhar.",
@@ -283,7 +265,6 @@ def telaBoasVindas(nome):
             texto = fonteTexto.render(linha, True, branco_suave)
             tela.blit(texto, (tamanho[0]//2 - texto.get_width()//2, 140 + i*35))
 
-        # Botão visual de sair
         texto_sair = fonteBotao.render("Sair", True, branco_suave)
         padding_x, padding_y = 20, 10
         botao_largura = texto_sair.get_width() + padding_x * 2
@@ -306,7 +287,6 @@ def start():
     alturaButtonStart  = 40
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
-    
 
     while True:
         for evento in pygame.event.get():
@@ -322,14 +302,11 @@ def start():
 
                 
             elif evento.type == pygame.MOUSEBUTTONUP:
-                # Verifica se o clique foi dentro do retângulo
                 if startButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonStart = 150
                     alturaButtonStart  = 40
                     jogar()
                 if quitButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     quit()
@@ -360,7 +337,6 @@ def dead():
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
 
-    # Carregar os últimos 5 registros do log
     try:
         with open("log.dat.", "r") as arquivo:
             dados = json.load(arquivo)
@@ -401,12 +377,11 @@ def dead():
         tela.fill(branco)
         tela.blit(fundoDead, (0,0))
 
-        # Exibe título
         vermelho = (255, 0, 0)
         titulo_logs = fonteMenu.render("Últimos 5 Registros:", True, vermelho)
         tela.blit(titulo_logs, (350, 200))
 
-        vermelho = (255, 0, 0)  # vermelho forte
+        vermelho = (255, 0, 0)
         for i, texto in enumerate(texto_logs):
                 log_texto = fonteMenu.render(texto, True, vermelho)
                 tela.blit(log_texto, (150, 250 + i*30))
