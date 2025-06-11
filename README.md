@@ -1,3 +1,5 @@
+##Testador do jogo: Vinícius de Almeida Noetzold. RA:1138554
+
 Nome: Luís Eduardo Köche
 RA: 1138427
 Levei 2 semanas para desenvolver esse jogo, criei ele com base no jogo disponibilizado pelo professor, tive alguns problemas mas com a ajuda de IA consegui resolver, tive até mesmo que instalar uma versão mais antiga do python para conseguir fazer o executável.
